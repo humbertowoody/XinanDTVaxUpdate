@@ -1,7 +1,7 @@
 /**
  * Actualización de Catálogos de DTVax
  *
- * Nacubi Sistemas 2018
+ * Nakubi Sistemas 2018
  */
 const ClienteREST = require('node-rest-client').Client;
 const moment = require('moment');
@@ -11,7 +11,7 @@ const sql = require('mssql');
 const config = {
   user: 'node',
   password: '12345678',
-  server: 'localhost\\sqlexpress',
+  server: '192.168.1.11\\sqlexpress',
   database: 'dbSistema',
   encrypt: false,
 };
@@ -38,30 +38,31 @@ function getStringFecha() {
 }
 
 // Insertar datos a la base de datos
-function insertarDB(datos) {
+function insertarDB(datos, callback) {
   // Conexión al servidor
   console.log('Conectando al servidor SQL...');
   sql.connect(config).then(() => {
     console.log('Correctamente conectado al servidor SQL.');
-    const request = new sql.Request();
     // Para cada dato
     console.log('Inicia proceso de inserción...');
     datos.forEach((recaudo) => {
       // Construir el SQL
       let strQuery = 'INSERT INTO ' + tabla + ' (Fecha, recaudador, NoRecaudos, MontoRecaudado, MontoAforado) VALUES(';
-      strQuery += '\''+ recaudo.Fecha +'\',';
+      strQuery += '\''+ moment(recaudo.Fecha,'YY/MM/DD').format('YYYY/MM/DD') +'\',';
       strQuery += '\''+ recaudo.recaudador +'\',';
       strQuery += '\''+ recaudo.NoRecaudos +'\',';
       strQuery += '\''+ recaudo.MontoRecaudado +'\',';
       strQuery += '\''+ recaudo.MontoAforado +'\'';
       strQuery += ')';
       // Ejecutar la consulta
-      request.query(strQuery).catch((err) => {
+      new sql.Request().query(strQuery).catch((err) => {
         // Imprimir errores en consulta
         console.log('Request error: ' + err);
       });
+      console.log('Insertado dato de recaudador: ' + recaudo.recaudador);
     });
     console.log('Fin de proceso de inserción.');
+    callback();
   }).catch((err) => {
     // Imprimir errores en la conexión
     if (err) {
@@ -87,8 +88,14 @@ cliente.get(urlDtVax + getStringFecha(), (data) => {
   const resultado = JSON.parse(data);
   // Verificamos que no haya error en la API
   if (resultado.success === true) {
-    // Regresamos el array de datos
-    insertarDB(resultado.detail);
+    // Regresamos el array de datos e insertamos en base de datos
+    insertarDB(resultado.detail, () => {
+      // Cuando termina inserción, imprime mensaje, espera 1500 ms y cierra la conexión.
+      console.log('Fin de ejecución de Programa.');
+      setTimeout(() => {
+        sql.close();
+      }, 5000);
+    });
   } else {
     // Arrojamos un error en caso de problema con query a API
     throw 'Hubo un error al realizar la consulta a DTVax, revise la URL, ' +
