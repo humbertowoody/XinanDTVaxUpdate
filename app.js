@@ -14,17 +14,17 @@ const config = {
   server: 'localhost\\sqlexpress',
   database: 'dbSistema',
   encrypt: false,
-}
+};
 
 // Número de Días de atraso en la información
 const diasAtraso = 2;
 // URL de conexión para la API de DTVax sin la fecha final.
 const urlDtVax = 'http://www.dtvax.net:8081/ops/dtvaxOps?method=getUsersRecs&key=iLZJiGLY0hHWiSFG&recDate=';
 // Datos de la base de datos
-const tabla = 'tablaprueba';
+const tabla = 'MovRecaudacionesDTVax';
 
 /**
- * Declaración de functiones a emplear.
+ * Declaración de funciones a emplear.
  * A continuación se hace la declaración de todas las funciones que se implementarán a lo largo
  * del programa. Posteriormente se hace la implementación.
  */
